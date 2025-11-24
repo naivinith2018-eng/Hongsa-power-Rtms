@@ -5,42 +5,108 @@ namespace Hongsa.Rtms.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")] // api/User
- public class UserController: ControllerBase
-
+public class UserController : ControllerBase
 {
+    // mock data for users
+    private static readonly List<User> _users = new List<User>
+    {
+        new User { 
+            Id = 1, 
+            Username = "john", 
+            Email = "john@email.com", 
+            Fullname = "John Doe"
+        },
+        new User { 
+            Id = 2, 
+            Username = "samit", 
+            Email = "samit@email.com", 
+            Fullname = "Samit Koyom"
+        },
+    };
+
+    // GET: api/User
     [HttpGet]
-
-    public string GetUser()
+    public ActionResult<IEnumerable<User>> GetUsers()
     {
-       return "Hello User" ;
+        // IEnumerable คืออะไร
+        // IEnumerable เป็น interface ใน .NET Framework ที่ใช้แทน collection ของ object
+        // interface นี้กำหนด method เพียงตัวเดียวคือ GetEnumerator()
+        // GetEnumerator() : method นี้ return enumerator
+        // enumerator : object ที่ใช้วนซ้ำผ่าน collection
+        // ในที่นี้เราใช้ IEnumerable ในการ return ข้อมูลของ users
+
+        // วนซ้ำผ่าน collection โดยใช้ foreach
+        // foreach (var user in _users)
+        // {
+        //     Console.WriteLine($"{user.Id} - {user.Username}");
+        // }
+
+        return Ok(_users);
     }
 
-    [HttpGet ("WelcomeUser")]
-
-    public string WelcomeUser()
+    // GET: api/User/{id}
+    [HttpGet("{id}")]
+    public ActionResult<User> GetUser(int id)
     {
-       return "Welcome User" ;
+        var user = _users.Find(u => u.Id == id); // find user by id
+        if (user == null)
+        {
+            return NotFound();
+        }
+        return Ok(user);
     }
 
-    [HttpPost ("PostUser")]
 
-    public string PostUser()
+    // POST: api/User
+    [HttpPost]
+    public ActionResult<User> CreateUser([FromBody] User user)
     {
-       return "Post User" ;
+        _users.Add(user);
+        return CreatedAtAction(nameof(GetUser), new { id = user.Id }, user);
     }
 
-    [HttpPut ("PutUser")]
-
-    public string PutUser()
+    // PUT: api/User/{id}
+    [HttpPut("{id}")]
+    public IActionResult UpdateUser(int id, [FromBody] User user)
     {
-       return "Put User" ;
+        // Validate user id
+        if (id != user.Id)
+        {
+            return BadRequest();
+        }
+
+        // Find existing user
+        var existingUser = _users.Find(u => u.Id == id);
+        if (existingUser == null)
+        {
+            return NotFound();
+        }
+
+        // Update user
+        existingUser.Username = user.Username;
+        existingUser.Email = user.Email;
+        existingUser.Fullname = user.Fullname;
+
+        // Return updated user
+        return Ok(existingUser);
     }
 
-    [HttpDelete ("DeleteUser")]
-
-    public string DeleteUser()
+    // DELETE: api/User/2
+    [HttpDelete("{id}")]
+    public ActionResult DeleteUser(int id)
     {
-       return "Delete User" ;
+        // Find existing user
+        var user = _users.Find(u => u.Id == id);
+
+        if (user == null)
+        {
+            return NotFound();
+        }
+
+        // Remove user from list
+        _users.Remove(user);
+        return NoContent();
     }
+
 
 }
