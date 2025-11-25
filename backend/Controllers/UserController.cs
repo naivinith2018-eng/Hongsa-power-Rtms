@@ -22,6 +22,13 @@ public class UserController : ControllerBase
             Email = "samit@email.com", 
             Fullname = "Samit Koyom"
         },
+
+                new User { 
+            Id = 3, 
+            Username = "Dang", 
+            Email = "Dang@email.com", 
+            Fullname = "Dang Koyom"
+        },
     };
 
     // GET: api/User
