@@ -4,10 +4,11 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Hongsa.Rtms.Api.Models;
 
 using Scalar.AspNetCore;
-using Microsoft.Extensions.Options;
 var builder = WebApplication.CreateBuilder(args);
+
 
 // Entity Framework Core MS SQL Server
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -17,21 +18,21 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 );
 
 // Adding Identity
-builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
-       { 
-        // Require at least one digit
-        options.Password.RequireDigit = true;
-        // Require at least one lowercase character
-        options.Password.RequireLowercase = true;
-        // Require at least one uppercase character
-        options.Password.RequireUppercase = true;
-        // Require at least one special character
-        options.Password.RequireNonAlphanumeric = false;
-        // Require at least 6 characters
-        options.Password.RequiredLength = 6;
-        })
-    .AddEntityFrameworkStores<ApplicationDbContext>()
-    .AddDefaultTokenProviders();
+builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
+{
+    // ไม่บังคับว่าต้องมีตัวเลข (0-9)
+    options.Password.RequireDigit = false;
+    // ไม่บังคับว่าต้องมีตัวพิมพ์เล็ก (a-z)
+    options.Password.RequireLowercase = false;
+    // ไม่บังคับว่าต้องมีตัวพิมพ์ใหญ่ (A-Z)
+    options.Password.RequireUppercase = false;
+    // ไม่บังคับว่าต้องมีอักขระพิเศษ (เช่น ! @ # $ %)
+    options.Password.RequireNonAlphanumeric = false;
+    // กำหนดความยาวขั้นต่ำ (เช่น ตั้งเป็น 8 ตัวอักษร)
+    options.Password.RequiredLength = 8;
+})
+.AddEntityFrameworkStores<ApplicationDbContext>()
+.AddDefaultTokenProviders();
 
 // Adding Authentication
 builder.Services.AddAuthentication(options =>
@@ -54,6 +55,20 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
+// Allow CORS
+builder.Services.AddCors(options => 
+{
+ options.AddPolicy("MultipleOrigins",
+    policy =>
+    {
+        policy.WithOrigins(
+            "*" // Allow any origin
+        )
+        .AllowAnyMethod()
+        .AllowAnyHeader();
+    });
+});
+
 // Add services to the container.
 
 builder.Services.AddControllers();
@@ -67,7 +82,7 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 
-     // Scalar API Reference Configuration
+    // Scalar API Reference Configuration
     app.MapScalarApiReference(options =>
     {
         options
@@ -76,9 +91,7 @@ if (app.Environment.IsDevelopment())
             .WithDefaultHttpClient(ScalarTarget.CSharp, ScalarClient.HttpClient);
     });
 }
-
 // ปิดการใช้งาน HTTPS ชั่วคราว (ถ้าจำเป็น)
-
 // app.UseHttpsRedirection();
 
 // Add Authentication
@@ -86,6 +99,9 @@ app.UseAuthentication();
 
 // Add Authorization
 app.UseAuthorization();
+
+// Enable CORS
+app.UseCors("MultipleOrigins");
 
 app.MapControllers();
 

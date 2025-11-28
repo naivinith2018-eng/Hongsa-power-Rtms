@@ -13,13 +13,13 @@ namespace Hongsa.Rtms.Api.Controllers;
 [Route("api/[controller]")]
 public class AuthenticateController: ControllerBase
 {
-    private readonly UserManager<IdentityUser> _userManager;
+    private readonly UserManager<ApplicationUser> _userManager;
     private readonly RoleManager<IdentityRole> _roleManager;
     private readonly IConfiguration _configuration;
 
     // Constructor
     public AuthenticateController(
-        UserManager<IdentityUser> userManager, RoleManager<IdentityRole> roleManager, 
+        UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, 
         IConfiguration configuration)
     {
         _userManager = userManager;
@@ -62,11 +62,16 @@ public class AuthenticateController: ControllerBase
         }
 
         // สร้าง User
-        IdentityUser user = new()
+        ApplicationUser user = new()
         {
             Email = model.Email,
             SecurityStamp = Guid.NewGuid().ToString(),
-            UserName = model.Username
+            UserName = model.Username,
+            // Map ข้อมูลใหม่ลงไป
+            FirstName = model.FirstName,
+            LastName = model.LastName,
+            EmployeeId = model.EmployeeId,
+            DepartmentName = model.DepartmentName
         };
 
         // สร้าง User ในระบบ
@@ -139,11 +144,16 @@ public class AuthenticateController: ControllerBase
         }
 
         // สร้าง User
-        IdentityUser user = new()
+        ApplicationUser user = new()
         {
             Email = model.Email,
             SecurityStamp = Guid.NewGuid().ToString(),
-            UserName = model.Username
+            UserName = model.Username,
+            // Map ข้อมูลใหม่ลงไป
+            FirstName = model.FirstName,
+            LastName = model.LastName,
+            EmployeeId = model.EmployeeId,
+            DepartmentName = model.DepartmentName
         };
 
         // สร้าง User ในระบบ
@@ -229,7 +239,7 @@ public class AuthenticateController: ControllerBase
         var token = new JwtSecurityToken(
             issuer: _configuration["JWT:ValidIssuer"],
             audience: _configuration["JWT:ValidAudience"],
-            expires: currentTime.AddHours(3),
+            expires: currentTime.AddYears(200), // อายุของ token
             claims: authClaims,
             signingCredentials: new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256)
         );
